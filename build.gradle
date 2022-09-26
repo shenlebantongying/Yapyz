@@ -38,7 +38,7 @@ tasks.withType(JavaCompile) {
 
 application {
     mainModule = 'org.slbtty.yapyz'
-    mainClass = 'org.slbtty.yapyz.YapyzGUI'
+    mainClass = 'org.slbtty.yapyz.YapyzLauncher'
 }
 
 javafx {
