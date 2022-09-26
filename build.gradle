@@ -38,11 +38,11 @@ tasks.withType(JavaCompile) {
 
 application {
     mainModule = 'org.slbtty.yapyz'
-    mainClass = 'org.slbtty.yapyz.HelloApplication'
+    mainClass = 'org.slbtty.yapyz.YapyzGUI'
 }
 
 javafx {
-    version = '18.0.1'
+    version = '19'
     modules = ['javafx.controls', 'javafx.fxml']
 }
 
