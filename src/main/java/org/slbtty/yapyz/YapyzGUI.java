@@ -11,6 +11,7 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.tinylog.Logger;
 
 import java.io.File;
 
@@ -127,7 +128,7 @@ public class YapyzGUI extends Application {
             File selectedDir = dirChooser.showDialog(stage);
 
             if (selectedDir == null) {
-                System.out.println("Invalid path");
+                Logger.error("Unable to obtain a valid path");
             } else {
                 indexSettings.addPath(selectedDir.getAbsolutePath());
             }

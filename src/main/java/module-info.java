@@ -5,6 +5,7 @@ module org.slbtty.yapyz {
     requires org.apache.lucene.core;
     requires org.apache.lucene.demo;
     requires org.apache.lucene.queryparser;
+    requires org.tinylog.api;
 
     // implementation 'com.itextpdf:kernel:7.2.3'
     // itext7 didn't give a proper name for module

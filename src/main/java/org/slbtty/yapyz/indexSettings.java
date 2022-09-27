@@ -2,6 +2,7 @@ package org.slbtty.yapyz;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.tinylog.Logger;
 
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -26,7 +27,7 @@ public class indexSettings {
             try {
                 Files.createFile(fpath);
             } catch (Exception e) {
-                System.out.println("Unable to create index path");
+                Logger.error("Unable to create index path");
             }
         }
 
@@ -50,7 +51,7 @@ public class indexSettings {
             lines.filter(Predicate.not(String::isEmpty))
                     .forEach(indexPaths::add);
         } catch (Exception e) {
-            System.out.println("Unable to load index config");
+            Logger.error("Unable to load index config");
         }
     }
 
@@ -60,7 +61,7 @@ public class indexSettings {
                 out.println(x);
             }
         } catch (Exception e) {
-            System.out.println("Unable to save file");
+            Logger.error("Unable to save file");
         }
     }
 }
