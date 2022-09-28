@@ -14,15 +14,18 @@ import javafx.stage.Stage;
 import org.tinylog.Logger;
 
 import java.io.File;
+import java.io.IOException;
 
 public class YapyzGUI extends Application {
 
     public static indexSettings indexSettings;
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws IOException {
         // init
         indexSettings = new indexSettings();
+        var indexer = new Indexer();
+
 
         stage.setTitle("Yapyz!");
 
@@ -30,14 +33,24 @@ public class YapyzGUI extends Application {
 
         // MenuBar
         // Settings
-        Menu settingsMenu = new Menu("Settings");
-        MenuItem indexSetting = new MenuItem("Index Settings");
+        Menu settingsMenu = new Menu("Index Control");
+        var indexSetting = new MenuItem("Index Settings");
+        var rebuildIndex = new MenuItem("Rebuild Index");
 
         indexSetting.setOnAction(event -> {
             SettingPanel().show();
         });
 
-        settingsMenu.getItems().add(indexSetting);
+        rebuildIndex.setOnAction(event -> {
+            indexer.setPaths(indexSettings.indexPaths);
+            try {
+                indexer.rebuildIndex();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        settingsMenu.getItems().addAll(rebuildIndex, indexSetting);
 
         // Help Menu
         Menu helpMenu = new Menu("Help");
