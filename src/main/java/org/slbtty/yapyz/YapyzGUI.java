@@ -1,6 +1,8 @@
 package org.slbtty.yapyz;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -20,14 +22,19 @@ public class YapyzGUI extends Application {
 
     public static indexSettings indexSettings;
 
+    private Stage mainStage;
+
     @Override
     public void start(Stage stage) throws IOException {
+
+        mainStage = stage;
         // init
+
         indexSettings = new indexSettings();
         var indexer = new Indexer();
 
 
-        stage.setTitle("Yapyz!");
+        mainStage.setTitle("Yapyz!");
 
         VBox mainFrame = new VBox(0);
 
@@ -61,41 +68,42 @@ public class YapyzGUI extends Application {
         helpMenu.getItems().addAll(about);
 
         MenuBar mainMenuBar = new MenuBar();
-        mainMenuBar.getMenus().addAll(settingsMenu,helpMenu);
+        mainMenuBar.getMenus().addAll(settingsMenu, helpMenu);
 
-        // SearchBox and A btn
-
-        var searchInput = new TextField();
-        HBox.setHgrow(searchInput, Priority.ALWAYS);
-
-        var searchButton = new Button("Search");
-
-        searchButton.setOnAction(event -> {
-            System.out.println(event.toString());
-        });
-
-
-        var searchBar = new HBox(searchButton, searchInput);
 
         // MainTable
         TableView<Entry> table = new TableView<>();
 
         TableColumn<Entry, String> colName = new TableColumn<>("Name");
-        TableColumn<Entry, String> colDesc = new TableColumn<>("Description");
+        TableColumn<Entry, Float> colDesc = new TableColumn<>("Score");
+        colName.setPrefWidth(300);
 
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        colDesc.setCellValueFactory(new PropertyValueFactory<>("desc"));
+        colDesc.setCellValueFactory(new PropertyValueFactory<>("score"));
 
         table.getColumns().add(colName);
         table.getColumns().add(colDesc);
 
-        table.getItems().addAll(
-                new Entry("one", "good"),
-                new Entry("two", "nice")
-        );
+
+        table.prefHeightProperty().bind(mainStage.heightProperty());
+
+        // SearchBox and A btn
+        
+        var searchInput = new TextField();
+        HBox.setHgrow(searchInput, Priority.ALWAYS);
+
+        var searchButton = new Button("Search");
+
+        EventHandler<ActionEvent> searchEvent =
+                event -> table.setItems(SearchFiles.simpleTermSearch(searchInput.getText()));
 
 
-        table.prefHeightProperty().bind(stage.heightProperty());
+        searchButton.setOnAction(searchEvent);
+        // typically ENTER key pressed
+        searchInput.setOnAction(searchEvent);
+
+
+        var searchBar = new HBox(searchButton, searchInput);
 
         //
 
@@ -106,16 +114,17 @@ public class YapyzGUI extends Application {
 
         Scene mainFrameScene = new Scene(mainFrame, 800, 600);
 
-        stage.setScene(mainFrameScene);
+        mainStage.setScene(mainFrameScene);
 
-        stage.show();
+        mainStage.show();
 
     }
 
     private Stage AboutPanel() {
         var stage = new Stage();
         stage.setScene(new Scene(new VBox(new Text("https://github.com/shenlebantongying/Yapyz")), 400, 400));
-        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.initOwner(this.mainStage);
         return stage;
     }
 
@@ -163,6 +172,8 @@ public class YapyzGUI extends Application {
                 confirmBtn);
 
         var scene = new Scene(vBox);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.initOwner(this.mainStage);
         stage.setScene(scene);
         return stage;
     }

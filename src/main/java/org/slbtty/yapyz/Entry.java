@@ -2,18 +2,18 @@ package org.slbtty.yapyz;
 
 public class Entry {
     private final String name;
-    private final String desc;
+    private final float score;
 
-    public Entry(String name, String desc){
+    public Entry(String name, float desc){
         this.name = name;
-        this.desc = desc;
+        this.score = desc;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getDesc() {
-        return desc;
+    public float getScore() {
+        return score;
     }
 }

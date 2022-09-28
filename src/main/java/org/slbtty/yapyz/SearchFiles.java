@@ -1,6 +1,7 @@
 package org.slbtty.yapyz;
 
-import org.apache.lucene.document.Document;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
@@ -11,30 +12,36 @@ import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+
 import org.apache.lucene.search.ScoreDoc;
+import org.tinylog.Logger;
 
 public class SearchFiles {
 
-    public static void main(String[] args) throws IOException {
+    public static ObservableList<Entry> simpleTermSearch(String queryString){
         var dotYpz = Paths.get(System.getProperty("user.home")).resolve(".yapyz");
         var indexStoragePath = dotYpz.resolve("index");
 
         try (org.apache.lucene.index.DirectoryReader reader = DirectoryReader.open(FSDirectory.open(indexStoragePath.toAbsolutePath()))) {
             var searcher = new IndexSearcher(reader);
-            
-            System.out.println(reader.getDocCount("contents"));
-            
-            var queryString = "lambda";
-            
+
             Query query = new TermQuery(new Term("contents", queryString));
-            
+
             TopDocs topDocs = searcher.search(query, 10);
-            
-            System.out.println(topDocs.scoreDocs.length);
+
+            ObservableList<Entry> result = FXCollections.observableArrayList();
+
+
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                Document resultDoc = searcher.doc(scoreDoc.doc);
-                System.out.println("> got" + resultDoc.get("path"));
+                result.add(new Entry(searcher.doc(scoreDoc.doc).get("path"),scoreDoc.score));
             }
+
+            return result;
+        } catch (IOException e) {
+            Logger.error(e, "Cannot open index reader");
         }
+
+        return null;
     }
+
 }
