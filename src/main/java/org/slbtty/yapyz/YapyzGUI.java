@@ -155,7 +155,7 @@ public class YapyzGUI extends Application {
         });
 
         var indexPathsView = new ListView<>(indexSettings.indexPaths);
-        System.out.println(indexSettings.toString());
+
         vBox.getChildren().addAll(
                 new Label("Index Paths:"),
                 pathManipulateBar,

@@ -19,13 +19,15 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
-public class Indexer implements AutoCloseable {
+public class Indexer{
 
 
     // TODO: switch to per-file path?
     private List<String> indexPaths;
 
-    private final IndexWriter indexWriter;
+
+    private final Path indexStoragePath = Paths.get(System.getProperty("user.home")).resolve(".yapyz").resolve("index");
+    private final IndexWriterConfig writerConfig;
 
     public void setPaths(List<String> paths) {
         this.indexPaths = paths;
@@ -34,32 +36,32 @@ public class Indexer implements AutoCloseable {
     public Indexer() throws IOException {
 
         // Init indexWriter
-        var dotYpz = Paths.get(System.getProperty("user.home")).resolve(".yapyz");
-        var indexStoragePath = dotYpz.resolve("index");
 
         Files.createDirectories(indexStoragePath); // ensure path
 
         var analyzer = new StandardAnalyzer();
 
-        var writerConfig = new IndexWriterConfig(analyzer);
+        writerConfig = new IndexWriterConfig(analyzer);
         writerConfig.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
-        indexWriter = new IndexWriter(FSDirectory.open(indexStoragePath), writerConfig);
-        //
+    }
+
+    private IndexWriter obtainWriter() throws IOException {
+        return new IndexWriter(FSDirectory.open(indexStoragePath), writerConfig);
     }
 
     public void rebuildIndex() throws IOException {
-        indexWriter.deleteAll();
+        var writer = obtainWriter();
+        writer.deleteAll();
         for (var path : indexPaths) {
             Path p = Path.of(path);
             if (Files.isDirectory(p.toAbsolutePath())) {
-                indexDocs(p);
+                indexDocs(writer,p);
             } else {
                 Logger.error(path, " is not a valid path");
             }
         }
-        IOUtils.close();
-
+        writer.close();
     }
 
     void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
@@ -82,7 +84,7 @@ public class Indexer implements AutoCloseable {
         }
     }
 
-    void indexDocs(Path path) throws IOException {
+    void indexDocs(IndexWriter writer, Path path) throws IOException {
         if (Files.isDirectory(path)) {
             Files.walkFileTree(
                     path,
@@ -90,7 +92,7 @@ public class Indexer implements AutoCloseable {
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes atts) {
                             try {
-                                indexDoc(indexWriter, file, atts.lastModifiedTime().toMillis());
+                                indexDoc(writer, file, atts.lastModifiedTime().toMillis());
                             } catch (IOException e) {
                                 Logger.error(e);
                             }
@@ -99,14 +101,8 @@ public class Indexer implements AutoCloseable {
                     }
             );
         } else {
-            indexDoc(indexWriter, path, Files.getLastModifiedTime(path).toMillis());
+            indexDoc(writer, path, Files.getLastModifiedTime(path).toMillis());
         }
     }
-
-    // TODO: what is this?
-    @Override
-    public void close() {
-    }
-
 }
 
