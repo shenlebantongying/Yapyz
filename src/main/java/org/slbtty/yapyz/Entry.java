@@ -1,16 +1,16 @@
 package org.slbtty.yapyz;
 
 public class Entry {
-    private final String name;
+    private final String path;
     private final float score;
 
-    public Entry(String name, float desc){
-        this.name = name;
+    public Entry(String path, float desc){
+        this.path = path;
         this.score = desc;
     }
 
-    public String getName() {
-        return name;
+    public String getPath() {
+        return path;
     }
 
     public float getScore() {

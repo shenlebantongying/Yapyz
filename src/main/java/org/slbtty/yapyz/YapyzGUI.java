@@ -1,11 +1,14 @@
 package org.slbtty.yapyz;
 
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -22,13 +25,22 @@ public class YapyzGUI extends Application {
 
     public static indexSettings indexSettings;
 
+    // External "service" objects
+    private static Clipboard clipboard;
+    private static UrlHandler urlHandler;
+
     private Stage mainStage;
 
     @Override
     public void start(Stage stage) throws IOException {
 
+        // external things init
+        clipboard = Clipboard.getSystemClipboard();
+        urlHandler = new UrlHandler();
+
+        // jfx init
+
         mainStage = stage;
-        // init
 
         indexSettings = new indexSettings();
         var indexer = new Indexer();
@@ -74,12 +86,43 @@ public class YapyzGUI extends Application {
         // MainTable
         TableView<Entry> table = new TableView<>();
 
-        TableColumn<Entry, String> colName = new TableColumn<>("Name");
+        TableColumn<Entry, String> colName = new TableColumn<>("Path");
         TableColumn<Entry, Float> colDesc = new TableColumn<>("Score");
         colName.setPrefWidth(300);
 
-        colName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colName.setCellValueFactory(new PropertyValueFactory<>("path"));
         colDesc.setCellValueFactory(new PropertyValueFactory<>("score"));
+
+
+        // TODO: code below is questionable since it create a content menu for every row creation?
+        table.setRowFactory(param -> {
+            final var row = new TableRow<Entry>();
+            final var contextMenu = new ContextMenu();
+            final var copy2clipboardMenuItem = new MenuItem("Copy path");
+
+            copy2clipboardMenuItem.setOnAction(e -> {
+                final var str_for_clipboard = new ClipboardContent();
+                str_for_clipboard.putString(table.getSelectionModel().getSelectedItem().getPath()) ;
+                clipboard.setContent(str_for_clipboard);
+            });
+
+            contextMenu.getItems().add(copy2clipboardMenuItem);
+
+            // TODO: When row is empty, do nothing. Is there a better way to write this?
+            row.contextMenuProperty().bind(
+                    Bindings.when(row.emptyProperty())
+                            .then((ContextMenu)null)
+                            .otherwise(contextMenu));
+
+
+            row.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 2 && (! row.isEmpty())){
+                    urlHandler.open(row.getItem().getPath());
+                }
+            });
+
+            return row;
+        });
 
         table.getColumns().add(colName);
         table.getColumns().add(colDesc);
