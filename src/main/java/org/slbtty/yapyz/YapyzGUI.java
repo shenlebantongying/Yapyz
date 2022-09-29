@@ -6,7 +6,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
@@ -84,19 +83,19 @@ public class YapyzGUI extends Application {
 
 
         // MainTable
-        TableView<Entry> table = new TableView<>();
+        TableView<ResultEntry> table = new TableView<>();
 
-        TableColumn<Entry, String> colName = new TableColumn<>("Path");
-        TableColumn<Entry, Float> colDesc = new TableColumn<>("Score");
+        TableColumn<ResultEntry, String> colName = new TableColumn<>("Path");
+        TableColumn<ResultEntry, Float> colDesc = new TableColumn<>("Score");
         colName.setPrefWidth(300);
 
-        colName.setCellValueFactory(new PropertyValueFactory<>("path"));
-        colDesc.setCellValueFactory(new PropertyValueFactory<>("score"));
+        colName.setCellValueFactory(cellData -> cellData.getValue().getPathProperty());
+        colDesc.setCellValueFactory(cellData -> cellData.getValue().getScoreProperty());
 
 
         // TODO: code below is questionable since it create a content menu for every row creation?
         table.setRowFactory(param -> {
-            final var row = new TableRow<Entry>();
+            final var row = new TableRow<ResultEntry>();
             final var contextMenu = new ContextMenu();
             final var copy2clipboardMenuItem = new MenuItem("Copy path");
 

@@ -18,7 +18,7 @@ import org.tinylog.Logger;
 
 public class SearchFiles {
 
-    public static ObservableList<Entry> simpleTermSearch(String queryString){
+    public static ObservableList<ResultEntry> simpleTermSearch(String queryString){
         var dotYpz = Paths.get(System.getProperty("user.home")).resolve(".yapyz");
         var indexStoragePath = dotYpz.resolve("index");
 
@@ -29,11 +29,11 @@ public class SearchFiles {
 
             TopDocs topDocs = searcher.search(query, 10);
 
-            ObservableList<Entry> result = FXCollections.observableArrayList();
+            ObservableList<ResultEntry> result = FXCollections.observableArrayList();
 
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                result.add(new Entry(searcher.doc(scoreDoc.doc).get("path"),scoreDoc.score));
+                result.add(new ResultEntry(searcher.doc(scoreDoc.doc).get("path"),scoreDoc.score));
             }
 
             return result;
