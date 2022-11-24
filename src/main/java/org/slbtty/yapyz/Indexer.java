@@ -7,7 +7,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.IOUtils;
 import org.tinylog.Logger;
 
 import java.io.BufferedReader;
@@ -66,6 +65,8 @@ public class Indexer{
 
     void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
         try (InputStream stream = Files.newInputStream(file)) {
+
+            // All info within a Document storied within
             var doc = new Document();
             Field pathField = new StringField("path", file.toString(), Field.Store.YES);
             doc.add(pathField);

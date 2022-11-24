@@ -1,3 +1,4 @@
 # Yapyz Search
 
-Brings two billion documents to your fingertip!
+The million dollar search engine on your desktop.
+
