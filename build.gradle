@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.13'
-    id 'org.beryx.jlink' version '2.25.0'
 }
 
 group 'org.slbtty'
@@ -38,10 +37,6 @@ java {
     targetCompatibility = '19'
 }
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
-
 application {
     mainModule = 'org.slbtty.yapyz'
     mainClass = 'org.slbtty.yapyz.YapyzLauncher'
@@ -61,14 +56,23 @@ test {
     useJUnitPlatform()
 }
 
-jlink {
-    imageZip = project.file("${buildDir}/distributions/app-${javafx.platform.classifier}.zip")
-    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-    launcher {
-        name = 'yapyz'
-    }
-}
+tasks.register('myJpackage') {
+    group 'distribution'
+    // TODO: what does installDist means?
+    dependsOn 'installDist'
+    doLast {
+        def destDir = layout.buildDirectory.dir("myJpackage").get().toString()
+        delete destDir
+        def jpackageCMD= "jpackage " +
+                "--type app-image " +
+                "--input " + layout.buildDirectory.dir("install/Yapyz/lib").get().toString() + " " +
+                "--dest  " + destDir + " " +
+                "--name Yapyz " +
+                "--main-jar Yapyz-1.0.jar " +
+                "--main-class org.slbtty.yapyz.YapyzLauncher "
+        def result = jpackageCMD.execute()
 
-jlinkZip {
-    group = 'distribution'
+        println(jpackageCMD)
+        println(result.getErr().text)
+    }
 }
