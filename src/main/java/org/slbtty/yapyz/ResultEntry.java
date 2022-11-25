@@ -13,11 +13,11 @@ public class ResultEntry {
     }
 
     public String getPath(){
-        return path.toString();
+        return path.get();
     }
 
     public float getScore(){
-        return getScore();
+        return score.get();
     }
 
     public ObjectProperty<String> getPathProperty() {

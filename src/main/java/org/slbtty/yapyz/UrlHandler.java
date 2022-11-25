@@ -18,9 +18,7 @@ public class UrlHandler {
         UNKNOWN
     }
 
-    private String osOpener;
     private final OSType osType;
-
 
     private OSType getOSType() {
         String osName = System.getProperty("os.name");
@@ -42,22 +40,24 @@ public class UrlHandler {
 
     public UrlHandler(){
         osType = getOSType();
-        switch (osType) {
-            case MACOSX -> osOpener = "open";
-            case LINUX -> osOpener = "xdg-open";
-            case WINDOWS -> osOpener = "cmd /c start"; // TODO: cmd /c start? works?
-            case UNKNOWN -> {
-                osOpener = "open";
-                Logger.error("OS type didn't determined");
-            }
-        }
     }
 
     public void open(String f) {
-        // More functionality is expected here,
-        // thus Processbuilder
         try {
-            new ProcessBuilder(osOpener,f).start();
+
+            var pb = new ProcessBuilder();
+
+            switch (osType) {
+                case MACOSX -> pb = new ProcessBuilder("open",f);
+                case LINUX -> pb = new ProcessBuilder("xdg-open",f);
+                case WINDOWS -> pb = new ProcessBuilder("cmd","/C",f);  // `cmd /?`
+                case UNKNOWN -> {
+                    pb =  new ProcessBuilder("open",f);
+                    Logger.error("OS type didn't determined");
+                }
+            }
+
+           pb.start();
         } catch (IOException e) {
             Logger.error(e,"Failed to create process");
         }
