@@ -28,6 +28,8 @@ public class Indexer{
     private final Path indexStoragePath = Paths.get(System.getProperty("user.home")).resolve(".yapyz").resolve("index");
     private final IndexWriterConfig writerConfig;
 
+    private final pdfExtractor PdfExtractor = pdfExtractor.getInstance();
+
     public void setPaths(List<String> paths) {
         this.indexPaths = paths;
     }
@@ -55,7 +57,7 @@ public class Indexer{
         for (var path : indexPaths) {
             Path p = Path.of(path);
             if (Files.isDirectory(p.toAbsolutePath())) {
-                indexDocs(writer,p);
+                walkPath(writer,p);
             } else {
                 Logger.error(path, " is not a valid path");
             }
@@ -64,28 +66,49 @@ public class Indexer{
     }
 
     void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
-        try (InputStream stream = Files.newInputStream(file)) {
-
-            // All info within a Document storied within
+        // TODO: code duplication
+        if (file.endsWith(".pdf")){
             var doc = new Document();
             Field pathField = new StringField("path", file.toString(), Field.Store.YES);
             doc.add(pathField);
             doc.add(new LongPoint("modified", lastModified));
+
             doc.add(
                     new TextField(
-                            "contents",
-                            new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
+                            "contents", pdfExtractor.obtainAllTextFromPath(file),Field.Store.YES));
 
             if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
                 writer.addDocument(doc);
             } else {
                 writer.updateDocument(new Term("path", file.toString()), doc);
             }
-            Logger.info("Index written " + file);
+
+        } else {
+            try (InputStream stream = Files.newInputStream(file)) {
+                // All info within a Document storied within
+                var doc = new Document();
+                Field pathField = new StringField("path", file.toString(), Field.Store.YES);
+                doc.add(pathField);
+                doc.add(new LongPoint("modified", lastModified));
+
+                doc.add(
+                        new TextField(
+                                "contents",
+                                // Plain text extractor
+                                new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
+
+                if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
+                    writer.addDocument(doc);
+                } else {
+                    writer.updateDocument(new Term("path", file.toString()), doc);
+                }
+            }
         }
+
+        Logger.info("Index written " + file);
     }
 
-    void indexDocs(IndexWriter writer, Path path) throws IOException {
+    void walkPath(IndexWriter writer, Path path) throws IOException {
         if (Files.isDirectory(path)) {
             Files.walkFileTree(
                     path,
