@@ -1,30 +1,20 @@
 package org.slbtty.yapyz;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-
 public class ResultEntry {
-    private final ObjectProperty<String> path = new SimpleObjectProperty<>();
-    private final ObjectProperty<Float> score = new SimpleObjectProperty<>();
+    private final String path;
+    private final Float score;
 
     public ResultEntry(String path, float score){
-        this.path.set(path);
-        this.score.set(score);
+        this.path = path;
+        this.score = score;
     }
 
     public String getPath(){
-        return path.get();
+        return this.path;
     }
 
     public float getScore(){
-        return score.get();
+        return this.score;
     }
 
-    public ObjectProperty<String> getPathProperty() {
-        return path;
-    }
-
-    public ObjectProperty<Float> getScoreProperty() {
-        return score;
-    }
 }

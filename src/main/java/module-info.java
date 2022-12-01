@@ -1,16 +1,19 @@
 module org.slbtty.yapyz {
-    requires transitive javafx.graphics;
-    requires javafx.controls;
-    requires javafx.fxml;
+
+    requires java.desktop;
+
     requires org.apache.lucene.core;
     requires org.apache.lucene.queryparser;
     requires org.tinylog.api;
 
-    // implementation 'com.itextpdf:kernel:7.2.3'
-    // itext7 didn't give a proper name for module
-    // it is called "automatic module" btw
-    requires kernel;
+    requires kernal;
+    requires io;
+    requires commons;
 
-    opens org.slbtty.yapyz to javafx.fxml;
+    requires com.formdev.flatlaf;
+    requires com.formdev.flatlaf.intellijthemes;
+
+    requires jdk.unsupported;
+
     exports org.slbtty.yapyz;
 }

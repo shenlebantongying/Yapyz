@@ -1,7 +1,8 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.13'
+    // For legacy jar, need better solution in future
+    id "org.gradlex.extra-java-module-info" version "1.1"
 }
 
 group 'org.slbtty'
@@ -11,10 +12,16 @@ repositories {
     mavenCentral()
 }
 
-dependencies{
-    implementation 'com.google.code.gson:gson:2.9.1'
+ext {
+    itextVersion = '7.2.4'
+}
 
-    implementation 'com.itextpdf:itext7-core:7.2.3'
+dependencies{
+    implementation group: 'com.itextpdf', name: 'kernel', version: itextVersion
+    implementation 'com.google.code.gson:gson:2.10'
+
+    implementation 'com.formdev:flatlaf:2.6'
+    implementation 'com.formdev:flatlaf-intellij-themes:2.6'
 
     // Logging
     implementation 'org.tinylog:tinylog-api:2.5.0'
@@ -24,17 +31,30 @@ dependencies{
     runtimeOnly('org.tinylog:slf4j-tinylog:2.5.0') {
         transitive = true
     }
-    implementation 'org.apache.lucene:lucene-core:9.4.0'
-    implementation 'org.apache.lucene:lucene-queryparser:9.4.0'
+    implementation 'org.apache.lucene:lucene-core:9.4.2'
+    implementation 'org.apache.lucene:lucene-queryparser:9.4.2'
 }
 
-ext {
-    junitVersion = '5.8.2'
-}
+
 
 java {
+    modularity.inferModulePath = true
+
     sourceCompatibility = '19'
     targetCompatibility = '19'
+}
+
+compileJava{
+    modularity.inferModulePath = true
+}
+
+extraJavaModuleInfo {
+    automaticModule("commons-${itextVersion}.jar", "commons")
+    automaticModule("io-${itextVersion}.jar", "io")
+    automaticModule("kernel-${itextVersion}.jar", "kernal")
+    // WHY ITEXT DEPENDS ON THIS??
+    automaticModule("animal-sniffer-annotations-1.18.jar", "animal")
+
 }
 
 application {
@@ -42,10 +62,6 @@ application {
     mainClass = 'org.slbtty.yapyz.YapyzLauncher'
 }
 
-javafx {
-    version = '19'
-    modules = ['javafx.controls', 'javafx.fxml']
-}
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")

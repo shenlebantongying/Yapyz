@@ -1,226 +1,99 @@
 package org.slbtty.yapyz;
 
-import javafx.application.Application;
-import javafx.beans.binding.Bindings;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import org.tinylog.Logger;
 
-import java.io.File;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-public class YapyzGUI extends Application {
 
-    public static indexSettings indexSettings;
+public class YapyzGUI extends JFrame {
 
-    // External "service" objects
-    private static Clipboard clipboard;
-    private static UrlHandler urlHandler;
+    public static IndexSettings indexSettings;
+    public  Indexer indexer;
 
-    private Stage mainStage;
+    public void initMainWindow()  {
+        indexSettings = new IndexSettings();
+        try {
+            indexer = new Indexer();
+        } catch (IOException err) {
+            throw new RuntimeException(err);
+        }
+        // Menu
 
-    @Override
-    public void start(Stage stage) throws IOException {
+        var menuBar = new JMenuBar();
 
-        // external things init
-        clipboard = Clipboard.getSystemClipboard();
-        urlHandler = new UrlHandler();
+        var indexControlMenu = new JMenu("Index Control");
+        var rebuildIndexMenu = new JMenuItem("Rebuild Index");
 
-        // jfx init
+        indexControlMenu.add(rebuildIndexMenu);
 
-        mainStage = stage;
+        menuBar.add(indexControlMenu);
 
-        indexSettings = new indexSettings();
-        var indexer = new Indexer();
+        setJMenuBar(menuBar);
+
+        var vbox = Box.createVerticalBox();
+
+        // SearchBar
+        var searchBar = Box.createHorizontalBox();
+
+        var searchBtn = new JButton("Search");
+        var searchTextField = new JTextField();
+        searchTextField.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE,searchTextField.getPreferredSize().height));
 
 
-        mainStage.setTitle("Yapyz!");
 
-        VBox mainFrame = new VBox(0);
+        searchBar.add(searchBtn);
+        searchBar.add(searchTextField);
 
-        // MenuBar
-        // Settings
-        Menu settingsMenu = new Menu("Index Control");
-        var indexSetting = new MenuItem("Index Settings");
-        var rebuildIndex = new MenuItem("Rebuild Index");
+        vbox.add(searchBar);
 
-        indexSetting.setOnAction(event -> {
-            SettingPanel().show();
-        });
+        // table
+        var mainTableModel = new MainTableModel();
+        JTable table = new JTable(mainTableModel);
+        vbox.add(table.getTableHeader());
+        vbox.add(table);
 
-        rebuildIndex.setOnAction(event -> {
+        add(vbox);
+
+        setTitle("Yapyz");
+        setSize(600,800);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        rebuildIndexMenu.addActionListener((ev -> {
             indexer.setPaths(indexSettings.indexPaths);
-            try {
+            try{
                 indexer.rebuildIndex();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (IOException err){
+                throw new RuntimeException(err);
             }
-        });
+        }));
 
-        settingsMenu.getItems().addAll(rebuildIndex, indexSetting);
+        Action SearchAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mainTableModel.resetResults();
+                mainTableModel.setResults(SearchFiles.simpleTermSearch(searchTextField.getText()));
+                mainTableModel.fireTableDataChanged();
+            }
+        };
 
-        // Help Menu
-        Menu helpMenu = new Menu("Help");
-        MenuItem about = new MenuItem("About");
-
-        about.setOnAction(event -> AboutPanel().show());
-
-        helpMenu.getItems().addAll(about);
-
-        MenuBar mainMenuBar = new MenuBar();
-        mainMenuBar.getMenus().addAll(settingsMenu, helpMenu);
-
-
-        // MainTable
-        TableView<ResultEntry> table = new TableView<>();
-
-        TableColumn<ResultEntry, String> colName = new TableColumn<>("Path");
-        TableColumn<ResultEntry, Float> colDesc = new TableColumn<>("Score");
-        colName.setPrefWidth(300);
-
-        colName.setCellValueFactory(cellData -> cellData.getValue().getPathProperty());
-        colDesc.setCellValueFactory(cellData -> cellData.getValue().getScoreProperty());
-
-
-        // TODO: code below is questionable since it create a content menu for every row creation?
-        table.setRowFactory(param -> {
-            final var row = new TableRow<ResultEntry>();
-            final var contextMenu = new ContextMenu();
-            final var copy2clipboardMenuItem = new MenuItem("Copy path");
-
-            copy2clipboardMenuItem.setOnAction(e -> {
-                final var str_for_clipboard = new ClipboardContent();
-                str_for_clipboard.putString(table.getSelectionModel().getSelectedItem().getPath()) ;
-                clipboard.setContent(str_for_clipboard);
-            });
-
-            contextMenu.getItems().add(copy2clipboardMenuItem);
-
-            // TODO: When row is empty, do nothing. Is there a better way to write this?
-            row.contextMenuProperty().bind(
-                    Bindings.when(row.emptyProperty())
-                            .then((ContextMenu)null)
-                            .otherwise(contextMenu));
-
-
-            row.setOnMouseClicked(e -> {
-                if (e.getClickCount() == 2 && (! row.isEmpty())){
-                    urlHandler.open(row.getItem().getPath());
-                }
-            });
-
-            return row;
-        });
-
-        table.getColumns().add(colName);
-        table.getColumns().add(colDesc);
-
-
-        table.prefHeightProperty().bind(mainStage.heightProperty());
-
-        // SearchBox and A btn
-        
-        var searchInput = new TextField();
-        HBox.setHgrow(searchInput, Priority.ALWAYS);
-
-        var searchButton = new Button("Search");
-
-        EventHandler<ActionEvent> searchEvent =
-                event -> table.setItems(SearchFiles.simpleTermSearch(searchInput.getText()));
-
-
-        searchButton.setOnAction(searchEvent);
-        // typically ENTER key pressed
-        searchInput.setOnAction(searchEvent);
-
-
-        var searchBar = new HBox(searchButton, searchInput);
-
-        //
-
-        mainFrame.getChildren()
-                .addAll(mainMenuBar,
-                        searchBar,
-                        table);
-
-        Scene mainFrameScene = new Scene(mainFrame, 800, 600);
-
-        mainStage.setScene(mainFrameScene);
-
-        mainStage.show();
-
+        searchBtn.addActionListener(SearchAction);
+        searchTextField.addActionListener(SearchAction);
     }
 
-    private Stage AboutPanel() {
-        var stage = new Stage();
-        stage.setScene(new Scene(new VBox(new Text("https://github.com/shenlebantongying/Yapyz")), 400, 400));
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.initOwner(this.mainStage);
-        return stage;
-    }
-
-
-    /**
-     * TODO: move this into a class?
-     */
-    private Stage SettingPanel() {
-
-        var dirChooser = new DirectoryChooser();
-        dirChooser.setTitle("Select a path to be indexed");
-
-
-        var stage = new Stage();
-        var vBox = new VBox();
-
-        var pathManipulateBar = new HBox();
-        var addPathBtn = new Button("Add");
-        var removePathBtn = new Button("Remove");
-        pathManipulateBar.getChildren().addAll(addPathBtn, removePathBtn);
-
-        addPathBtn.setOnAction(e -> {
-            File selectedDir = dirChooser.showDialog(stage);
-
-            if (selectedDir == null) {
-                Logger.error("Unable to obtain a valid path");
-            } else {
-                indexSettings.addPath(selectedDir.getAbsolutePath());
-            }
-        });
-
-        var confirmBtn = new Button("OK");
-        confirmBtn.setMaxWidth(Integer.MAX_VALUE);
-        confirmBtn.setOnAction(e -> {
-            indexSettings.saveToDisk();
-            stage.close();
-        });
-
-        var indexPathsView = new ListView<>(indexSettings.indexPaths);
-
-        vBox.getChildren().addAll(
-                new Label("Index Paths:"),
-                pathManipulateBar,
-                indexPathsView,
-                confirmBtn);
-
-        var scene = new Scene(vBox);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.initOwner(this.mainStage);
-        stage.setScene(scene);
-        return stage;
+    public YapyzGUI() {
+        FlatIntelliJLaf.setup();
+        initMainWindow();
     }
 
     public static void main(String[] args) {
-        launch();
+        EventQueue.invokeLater(()->{
+            var mainWindow = new YapyzGUI();
+            mainWindow.setVisible(true);
+        });
     }
 }

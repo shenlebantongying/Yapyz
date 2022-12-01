@@ -1,7 +1,6 @@
 package org.slbtty.yapyz;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
@@ -12,13 +11,15 @@ import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.lucene.search.ScoreDoc;
 import org.tinylog.Logger;
 
 public class SearchFiles {
 
-    public static ObservableList<ResultEntry> simpleTermSearch(String queryString){
+    public static List<ResultEntry> simpleTermSearch(String queryString){
         var dotYpz = Paths.get(System.getProperty("user.home")).resolve(".yapyz");
         var indexStoragePath = dotYpz.resolve("index");
 
@@ -29,7 +30,7 @@ public class SearchFiles {
 
             TopDocs topDocs = searcher.search(query, 10);
 
-            ObservableList<ResultEntry> result = FXCollections.observableArrayList();
+            List<ResultEntry> result = new ArrayList<>();
 
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {

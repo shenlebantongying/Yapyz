@@ -1,26 +1,27 @@
 package org.slbtty.yapyz;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+
 import org.tinylog.Logger;
 
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class indexSettings {
-    public ObservableList<String> indexPaths;
+public class IndexSettings {
+    public List<String> indexPaths;
 
     private final static Path fpath = Paths.get(System.getProperty("user.home"))
             .resolve(".yapyz")
             .resolve("indexPaths.txt");
 
-    public indexSettings() {
+    public IndexSettings() {
 
-        indexPaths = FXCollections.observableArrayList();
+        indexPaths = new ArrayList<>();
 
         // ensure the file
         if (!Files.isRegularFile(fpath)) {
