@@ -28,8 +28,6 @@ public class Indexer{
     private final Path indexStoragePath = Paths.get(System.getProperty("user.home")).resolve(".yapyz").resolve("index");
     private final IndexWriterConfig writerConfig;
 
-    private final pdfExtractor PdfExtractor = pdfExtractor.getInstance();
-
     public void setPaths(List<String> paths) {
         this.indexPaths = paths;
     }

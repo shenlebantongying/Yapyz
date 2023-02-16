@@ -1,9 +1,10 @@
 package org.slbtty.yapyz;
 
 
-import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
+import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -31,7 +32,12 @@ public class YapyzGUI extends JFrame {
         setSize(600, 800);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        FlatIntelliJLaf.setup();
+        FlatLightLaf.setup();
+
+        Font font = UIManager.getFont( "defaultFont" );
+        Font newFont = StyleContext.getDefaultStyleContext().getFont(font.getFamily(), font.getStyle(), 14);
+        UIManager.put( "defaultFont", newFont );
+
         initMainWindow();
         initSettingDialog();
     }
@@ -46,6 +52,7 @@ public class YapyzGUI extends JFrame {
     private void initSettingDialog() {
         pathDialog = new JDialog(this, "Index Paths", true);
         pathDialog.setSize(new Dimension(300, 500));
+        pathDialog.setLocationRelativeTo(this);
 
         var addRemoveBar = Box.createHorizontalBox();
         var mainbox = pathDialog.getContentPane();
@@ -176,8 +183,8 @@ public class YapyzGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mainTableModel.resetResults();
-                mainTableModel.setResults(SearchFiles.simpleTermSearch(searchTextField.getText()));
-                mainTableModel.fireTableDataChanged();
+                var result = SearchFiles.simpleTermSearch(searchTextField.getText());
+                mainTableModel.setResults(result);
             }
         };
 

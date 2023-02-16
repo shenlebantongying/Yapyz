@@ -52,6 +52,12 @@ public class MainTableModel extends AbstractTableModel {
 
     public void setResults(List<ResultEntry> results){
         this.results = results;
+
+        if (this.results.size() ==0){
+            results.add(new ResultEntry("No result found", 0));
+        }
+
+        fireTableDataChanged();
     }
 
 }

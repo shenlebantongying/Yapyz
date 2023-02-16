@@ -11,7 +11,6 @@ module org.slbtty.yapyz {
     requires commons;
 
     requires com.formdev.flatlaf;
-    requires com.formdev.flatlaf.intellijthemes;
 
     requires jdk.unsupported;
 
