@@ -13,26 +13,26 @@ repositories {
 }
 
 ext {
-    itextVersion = '7.2.4'
+    itextVersion = '7.2.5'
 }
 
 dependencies{
     implementation group: 'com.itextpdf', name: 'kernel', version: itextVersion
     implementation 'com.google.code.gson:gson:2.10'
 
-    implementation 'com.formdev:flatlaf:2.6'
-    implementation 'com.formdev:flatlaf-intellij-themes:2.6'
+    implementation 'com.formdev:flatlaf:3.0'
+    implementation 'com.formdev:flatlaf-intellij-themes:3.0'
 
     // Logging
-    implementation 'org.tinylog:tinylog-api:2.5.0'
-    implementation 'org.tinylog:tinylog-impl:2.5.0'
+    implementation 'org.tinylog:tinylog-api:2.6.0'
+    implementation 'org.tinylog:tinylog-impl:2.6.0'
 
     // Hidden requirement of itext7
-    runtimeOnly('org.tinylog:slf4j-tinylog:2.5.0') {
+    runtimeOnly('org.tinylog:slf4j-tinylog:2.6.0') {
         transitive = true
     }
-    implementation 'org.apache.lucene:lucene-core:9.4.2'
-    implementation 'org.apache.lucene:lucene-queryparser:9.4.2'
+    implementation 'org.apache.lucene:lucene-core:9.5.0'
+    implementation 'org.apache.lucene:lucene-queryparser:9.5.0'
 }
 
 
