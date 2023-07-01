@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'application'
     // For legacy jar, need better solution in future
-    id "org.gradlex.extra-java-module-info" version "1.1"
+    id "org.gradlex.extra-java-module-info" version "1.4.1"
 }
 
 group 'org.slbtty'
@@ -13,37 +13,35 @@ repositories {
 }
 
 ext {
-    itextVersion = '7.2.5'
+    itextVersion = '8.0.0'
 }
 
-dependencies{
+dependencies {
     implementation group: 'com.itextpdf', name: 'kernel', version: itextVersion
-    implementation 'com.google.code.gson:gson:2.10'
 
-    implementation 'com.formdev:flatlaf:3.0'
+    implementation 'com.formdev:flatlaf:3.1.1'
 
     // Logging
-    implementation 'org.tinylog:tinylog-api:2.6.0'
-    implementation 'org.tinylog:tinylog-impl:2.6.0'
+    implementation 'org.tinylog:tinylog-api:2.6.2'
+    implementation 'org.tinylog:tinylog-impl:2.6.2'
 
     // Hidden requirement of itext7
-    runtimeOnly('org.tinylog:slf4j-tinylog:2.6.0') {
+    runtimeOnly('org.tinylog:slf4j-tinylog:2.6.2') {
         transitive = true
     }
-    implementation 'org.apache.lucene:lucene-core:9.5.0'
-    implementation 'org.apache.lucene:lucene-queryparser:9.5.0'
+    implementation 'org.apache.lucene:lucene-core:9.7.0'
+    implementation 'org.apache.lucene:lucene-queryparser:9.7.0'
 }
-
-
 
 java {
     modularity.inferModulePath = true
 
-    sourceCompatibility = '19'
-    targetCompatibility = '19'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(20)
+    }
 }
 
-compileJava{
+compileJava {
     modularity.inferModulePath = true
 }
 
@@ -53,7 +51,7 @@ extraJavaModuleInfo {
     automaticModule("kernel-${itextVersion}.jar", "kernal")
     // WHY ITEXT DEPENDS ON THIS??
     automaticModule("animal-sniffer-annotations-1.18.jar", "animal")
-
+    automaticModule("bouncy-castle-connector-8.0.0.jar", "bouncyCastle")
 }
 
 application {
@@ -63,8 +61,8 @@ application {
 
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.9.2')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.9.2')
 }
 
 test {
@@ -78,7 +76,7 @@ tasks.register('myJpackage') {
     doLast {
         def destDir = layout.buildDirectory.dir("myJpackage").get().toString()
         delete destDir
-        def jpackageCMD= "jpackage " +
+        def jpackageCMD = "jpackage " +
                 "--type app-image " +
                 "--input " + layout.buildDirectory.dir("install/Yapyz/lib").get().toString() + " " +
                 "--dest  " + destDir + " " +
